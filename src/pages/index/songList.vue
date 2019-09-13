@@ -69,7 +69,8 @@ export default {
   watch: {
     musicList: {
       handler(newVal, oldVal) {
-          
+        // console.log("新", newVal);
+        // console.log("旧", oldVal);
       }
       // deep: true
     }
@@ -100,36 +101,36 @@ export default {
   methods: {
     // 返回上一级
     handleBack() {
-      this.$router.back();
+      this.$router.go(-1)
     },
     // 播放音乐
     handlePlaySong(id, index, singer, song) {
+      console.log(this.$store.state);
+      this.$store.commit('songId',id)  // 存储ID-> 方便进入歌曲播放详情页
       this.changeRed = index;
       // 获取对应获取音乐URL
       this.$axios({
         url: "/song/url",
         params: { id: id }
       }).then(res => {
+        // console.log(res);
         // 赋值给audio
         this.currentUrl = res.data.data[0].url;
 
         // 存储当前播放的音乐
-        this.$store.commit("setCurrentMusic", {
+        this.$store.commit("playMusicInfo", {
           url: this.currentUrl,
           singer: singer,
           song: song
         });
 
-        // console.log(this.musicList);
-
-        // 存储播放历史
         this.musicList.push({
           url: this.currentUrl,
           singer: singer,
           song: song
         });
-        // console.log(this.$store);
         this.$store.commit("historyMusic", this.musicList);
+    
 
         // console.log(this.$store);
       });

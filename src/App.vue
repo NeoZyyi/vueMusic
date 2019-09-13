@@ -2,7 +2,7 @@
   <div id="app">
     <router-view />
     <!-- 播放器组件 -->
-    <Audio></Audio>
+    <Audio v-show="audioShow"></Audio>
   </div>
 </template>
 
@@ -11,7 +11,21 @@ import Audio from '@/components/audio'
 export default {
   name: "app",
   components: {
-    Audio
+    Audio,
+  },
+  data(){
+    return {
+      audioShow:true
+    }
+  },
+  watch:{
+    $route(to,from){
+      if(to.fullPath === '/songInfo') {
+         this.audioShow = !this.audioShow
+      } else {
+        this.audioShow = true
+      }
+    }
   }
 };
 </script>

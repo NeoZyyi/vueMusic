@@ -11,16 +11,18 @@
       </div>
     </el-col>
     <!-- 歌描述 -->
-    <el-col :span="14" class="desc">
-      <div class="songname">{{ playMusicInfo.singer }}</div>
-      <div class="singer">{{ playMusicInfo.song }}</div>
-    </el-col>
+    <div @click="handleToInfo(songId)" class="abc">
+      <el-col :span="15" class="desc">
+        <div class="songname">{{ playMusicInfo.singer }}</div>
+        <div class="singer">{{ playMusicInfo.song }}</div>
+      </el-col>
+    </div>
     <!-- 播放和列表 -->
     <el-col :span="5" class="right">
       <div class="play" @click="handlePlay">
         <i class="el-icon-video-play" v-if="!isPlaying"></i>
         <i class="el-icon-video-pause" v-if="isPlaying"></i>
-        <audio id="audio" :src="playMusicInfo.url" autoplay :loop="isLoop" ref="myAudio"></audio>
+        <audio id="audio" :src="playMusicInfo.url" autoplay  ref="myAudio" @timeupdate="updateTime" @ended="onEnded"></audio>
       </div>
       <div class="list">
         <i class="el-icon-folder-checked" @click="handleShowHistory"></i>
@@ -31,12 +33,13 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
+import { mapState } from "vuex";
 
 // 引入播放历史组件
-import historyMusic from '@/components/historyMusic'
+import historyMusic from "@/components/historyMusic";
+
 export default {
-  components:{
+  components: {
     historyMusic
   },
   data() {
@@ -45,41 +48,72 @@ export default {
       musicUrl: "", // 音乐Url
       singer: "", // 歌手
       song: "", // 歌名
-      isLoop: true, // 是否循环播放  需要先判断列表是否有其它歌曲
-      isShow:false   // 播放历史默认隐藏
+      isShow: false, // 播放历史默认隐藏
+      currentTime:'', //当前播放进度
+      allTime:''
     };
   },
-   computed: {
+  computed: {
     ...mapState({
       // key的值自己定义的属性，在页面根据这个值来渲染
       // “playMusicInfo”是vuex中定义的属性
       playMusicInfo: "playMusicInfo",
+      songId: "songId",
       // 为了能够使用 `this` 获取局部状态，必须使用常规函数 把值return出去
-      setMusic(){
-        return playMusicInfo
+      setMusic() {
+        return playMusicInfo;
       }
     })
+ 
   },
   methods: {
     handlePlay(e) {
       // 播放状态按钮切换
       this.isPlaying = !this.isPlaying;
-      // 播放和暂停      
-      if(this.isPlaying) {
-        this.$refs.myAudio.play()
+      // 播放和暂停
+      if (this.isPlaying) {
+        this.$refs.myAudio.play();
       } else {
-        this.$refs.myAudio.pause()
+        this.$refs.myAudio.pause();
       }
     },
-    handleShowHistory () {
-        this.isShow = !this.isShow;
+    handleShowHistory() {
+      this.isShow = !this.isShow;
     },
-    //  歌单播放  
+    //  歌单播放
     historyMusicUrl(historyMusicUrl) {
-        console.log(historyMusicUrl);
-        this.$store.commit('setCurrentMusic',historyMusicUrl)
-        this.$refs.myAudio.play()
-        this.isPlaying = !this.isPlaying
+      console.log(historyMusicUrl);
+      this.$store.commit("playMusicInfo", historyMusicUrl);
+      this.$refs.myAudio.play();
+      this.isPlaying = !this.isPlaying;
+    },
+    // 跳转歌曲播放详情页
+    handleToInfo(songId) {
+      console.log(songId);
+      this.$router.push({ name: "SongInfo", params: { id: songId } });
+    },
+    // 当前音乐播放时长
+    updateTime(e) {
+       let that = this;
+       let count = 0;
+       this.currentTime = that.utils.format(e.target.currentTime)
+       this.allTime = that.utils.format(this.$refs.myAudio.duration)
+       let percent = (e.target.currentTime / e.target.duration) * 100
+       this.$store.commit("playTime",{playTime:this.currentTime,allTime:this.allTime,percent:percent})
+    },
+    onEnded(){
+   
+      let arrList = this.$store.state.historyMusic;
+      let now  = this.$store.state.playMusicInfo;
+      for(let i=0;i<arrList.length;i++) {
+          if(arrList[i].singer === now.singer) {
+           
+             const { song,singer,url} = arrList[i+1]
+             this.$store.commit("playMusicInfo",{url:url,singer:singer,song:song})  
+          }
+          // return news
+      }
+      // console.log(news);
     }
   }
 };
@@ -96,7 +130,10 @@ export default {
   border-top: 0.5px solid #ccc;
   background: #fff;
   margin: 0 !important;
+  display: flex;
+  justify-content: flex-start;
   .left {
+    width: 50px;
     .avatar {
       width: 40px;
       height: 40px;
@@ -112,6 +149,7 @@ export default {
     text-align: left;
     padding-top: 8px;
     margin-left: 10px;
+    width: 100%;
     div {
       color: #333;
     }
@@ -123,6 +161,7 @@ export default {
     display: flex;
     padding-top: 14px;
     padding-left: 30px;
+    width: 100px;
     i {
       font-size: 24px;
     }
@@ -130,6 +169,9 @@ export default {
       padding-left: 20px;
     }
   }
+}
+.abc {
+  flex: 1;
 }
 </style>
 
