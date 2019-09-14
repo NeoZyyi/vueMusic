@@ -7,7 +7,7 @@
 - 进度条 ✔
 - 暂时实现默认顺序播放 ✔
 
-后台来自 `NeteaseCloudMusicApi` 
+后台来自 `NeteaseCloudMusicApi` , 感谢提供
 
 ## Project setup
 ```
