@@ -7,6 +7,8 @@
 - 进度条 ✔
 - 暂时实现默认顺序播放 ✔
 
+后台来自 `NeteaseCloudMusicApi` 
+
 ## Project setup
 ```
 yarn install
