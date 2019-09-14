@@ -5,7 +5,7 @@
     <el-col :span="3" class="left">
       <div class="avatar">
         <img
-          src="https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=1820523987,3798556096&fm=26&gp=0.jpg"
+          :src="audioStatus.picUrl"
           alt
         />
       </div>
@@ -20,9 +20,16 @@
     <!-- 播放和列表 -->
     <el-col :span="5" class="right">
       <div class="play" @click="handlePlay">
-        <i class="el-icon-video-play" v-if="!isPlaying"></i>
-        <i class="el-icon-video-pause" v-if="isPlaying"></i>
-        <audio id="audio" :src="playMusicInfo.url" autoplay  ref="myAudio" @timeupdate="updateTime" @ended="onEnded"></audio>
+        <i class="el-icon-video-play" v-if="!audioStatus.isPlay"></i>
+        <i class="el-icon-video-pause" v-if="audioStatus.isPlay"></i>
+        <audio
+          id="audio"
+          :src="playMusicInfo.url"
+          autoplay
+          ref="myAudio"
+          @timeupdate="updateTime"
+          @ended="onEnded"
+        ></audio>
       </div>
       <div class="list">
         <i class="el-icon-folder-checked" @click="handleShowHistory"></i>
@@ -49,8 +56,8 @@ export default {
       singer: "", // 歌手
       song: "", // 歌名
       isShow: false, // 播放历史默认隐藏
-      currentTime:'', //当前播放进度
-      allTime:''
+      currentTime: "", //当前播放进度
+      allTime: ""
     };
   },
   computed: {
@@ -59,19 +66,19 @@ export default {
       // “playMusicInfo”是vuex中定义的属性
       playMusicInfo: "playMusicInfo",
       songId: "songId",
+      audioStatus:"audioStatus",
       // 为了能够使用 `this` 获取局部状态，必须使用常规函数 把值return出去
       setMusic() {
         return playMusicInfo;
       }
     })
- 
   },
   methods: {
     handlePlay(e) {
       // 播放状态按钮切换
-      this.isPlaying = !this.isPlaying;
+      this.$store.state.audioStatus.isPlay = !this.$store.state.audioStatus.isPlay
       // 播放和暂停
-      if (this.isPlaying) {
+      if (this.$store.state.audioStatus.isPlay) {
         this.$refs.myAudio.play();
       } else {
         this.$refs.myAudio.pause();
@@ -89,29 +96,40 @@ export default {
     },
     // 跳转歌曲播放详情页
     handleToInfo(songId) {
-      console.log(songId);
+      this.$axios({
+        url: "/song/detail",
+        params: { ids: songId }
+      }).then(res => {
+           console.log(res);
+      });
       this.$router.push({ name: "SongInfo", params: { id: songId } });
     },
     // 当前音乐播放时长
     updateTime(e) {
-       let that = this;
-       let count = 0;
-       this.currentTime = that.utils.format(e.target.currentTime)
-       this.allTime = that.utils.format(this.$refs.myAudio.duration)
-       let percent = (e.target.currentTime / e.target.duration) * 100
-       this.$store.commit("playTime",{playTime:this.currentTime,allTime:this.allTime,percent:percent})
+      let that = this;
+      let count = 0;
+      this.currentTime = that.utils.format(e.target.currentTime);
+      this.allTime = that.utils.format(this.$refs.myAudio.duration);
+      let percent = (e.target.currentTime / e.target.duration) * 100;
+      this.$store.commit("playTime", {
+        playTime: this.currentTime,
+        allTime: this.allTime,
+        percent: percent
+      });
     },
-    onEnded(){
-   
+    onEnded() {
       let arrList = this.$store.state.historyMusic;
-      let now  = this.$store.state.playMusicInfo;
-      for(let i=0;i<arrList.length;i++) {
-          if(arrList[i].singer === now.singer) {
-           
-             const { song,singer,url} = arrList[i+1]
-             this.$store.commit("playMusicInfo",{url:url,singer:singer,song:song})  
-          }
-          // return news
+      let now = this.$store.state.playMusicInfo;
+      for (let i = 0; i < arrList.length; i++) {
+        if (arrList[i].singer === now.singer) {
+          const { song, singer, url } = arrList[i + 1];
+          this.$store.commit("playMusicInfo", {
+            url: url,
+            singer: singer,
+            song: song
+          });
+        }
+        // return news
       }
       // console.log(news);
     }

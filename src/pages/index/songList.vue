@@ -67,15 +67,12 @@ export default {
     };
   },
   watch: {
-    musicList: {
-      handler(newVal, oldVal) {
-        // console.log("新", newVal);
-        // console.log("旧", oldVal);
-      }
-      // deep: true
-    }
+    ...mapState({
+      historyMusic: "historyMusic"
+    })
   },
   mounted() {
+    this.musicList = this.$store.state.historyMusic;
     const id = this.$route.params.id;
     this.id = id;
     // 1. 获取歌单详情
@@ -101,38 +98,34 @@ export default {
   methods: {
     // 返回上一级
     handleBack() {
-      this.$router.go(-1)
+      this.$router.go(-1);
     },
     // 播放音乐
     handlePlaySong(id, index, singer, song) {
-      console.log(this.$store.state);
-      this.$store.commit('songId',id)  // 存储ID-> 方便进入歌曲播放详情页
+      this.$store.commit("songId", id); // 存储ID-> 方便进入歌曲播放详情页
       this.changeRed = index;
       // 获取对应获取音乐URL
-      this.$axios({
-        url: "/song/url",
-        params: { id: id }
-      }).then(res => {
-        // console.log(res);
+      this.$axios({ url: "/song/url", params: { id: id } }).then(res => {
         // 赋值给audio
         this.currentUrl = res.data.data[0].url;
-
         // 存储当前播放的音乐
         this.$store.commit("playMusicInfo", {
           url: this.currentUrl,
           singer: singer,
           song: song
         });
-
+       
         this.musicList.push({
           url: this.currentUrl,
           singer: singer,
           song: song
         });
+        
         this.$store.commit("historyMusic", this.musicList);
-    
-
-        // console.log(this.$store);
+      });
+      // 获取信息
+      this.$axios({url: "/song/detail",params: { ids: id }}).then(res => {
+            this.$store.commit("audioStatus",{picUrl:res.data.songs[0].al.picUrl,isPlay:true})
       });
     }
   }

@@ -23,6 +23,11 @@ export default new Vuex.Store({
        playTime:"",
        allTime:"",
        percent:"",
+    },
+    // audio 头像和播放按钮的状态
+    audioStatus:{
+       picUrl:"",
+       isPlay:null
     }
   },
   // 同步修改state中的值
@@ -48,6 +53,9 @@ export default new Vuex.Store({
     // 音乐播放时长
     playTime(state,time){
        state.playTime = time
+    },
+    audioStatus(state,status) {
+       state.audioStatus = status;
     }
   }
 });

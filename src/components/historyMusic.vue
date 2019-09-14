@@ -38,13 +38,18 @@ export default {
       this.$refs.close.style.display = "none";
     },
     handlePlays(index, url, singer, song) {
-        this.changeRed = index;
+        // this.changeRed = index;
+        console.log(index);
         this.$emit("historyMusicUrl", { url: url, singer: singer, song: song });  
+         this.$axios({url: "/song/detail",params: { ids: this.$store.state.songId }}).then(res => {
+              this.$store.commit("audioStatus",{picUrl:res.data.songs[0].al.picUrl,isPlay:true})
+              console.log(this.$store.state);
+      });
     }
   },
   computed: {
     ...mapState({
-      historyMusic: "historyMusic"
+      historyMusic: "historyMusic",
     })
   }
 };

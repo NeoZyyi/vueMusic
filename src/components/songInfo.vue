@@ -10,7 +10,7 @@
     <div class="main">
       <!-- 图片 -->
       <div class="avatar">
-        <img :src="picUrl" alt />
+        <img :src="audioStatus.picUrl" alt />
       </div>
       <!-- 歌名 -->
       <div class="songName">{{ info.singer }}</div>
@@ -28,23 +28,29 @@
       <!-- 进度条 -->
       <el-row class="line">
         <el-col class="lines"></el-col>
-        <el-col class="btns" :style="{left:playTimes.percent + '%'}" ></el-col>
+        <el-col class="btns" :style="{left:playTimes.percent + '%'}"></el-col>
       </el-row>
 
       <!-- 歌曲时长 -->
-      <div class="songAllTime">
-          {{ playTimes.allTime }}
-      </div>
+      <div class="songAllTime">{{ playTimes.allTime }}</div>
       <!-- 进度点 -->
     </el-row>
 
     <!-- 上一首 播放 下一首 喜欢 -->
-    <div class="footer">
+    <el-row class="footer">
       <div class="like"></div>
-      <div class="prev"></div>
-      <div class="playing"></div>
-      <div class="next"></div>
-    </div>
+      <div class="prev">
+        <i class="el-icon-arrow-left"></i>
+      </div>
+      <div :span="3" class="playing" @click="handlePlay">
+        <i class="el-icon-video-play" v-if="!audioStatus.isPlay"></i>
+        <i class="el-icon-video-pause" v-if="audioStatus.isPlay"></i>
+      </div>
+
+      <div class="next">
+        <i class="el-icon-arrow-right"></i>
+      </div>
+    </el-row>
   </div>
 </template>
 
@@ -59,8 +65,9 @@ export default {
   },
   computed: {
     ...mapState({
-      info: "playMusicInfo",   // 歌曲信息
-      playTimes: "playTime",  // 播放时长
+      info: "playMusicInfo", // 歌曲信息
+      playTimes: "playTime", // 播放时长
+      audioStatus: "audioStatus"
     })
   },
   mounted() {
@@ -73,12 +80,14 @@ export default {
       console.log(res);
       this.picUrl = res.data.songs[0].al.picUrl;
     });
-    let btns = document.querySelector('.btns');
-    console.log(this.$store);
   },
   methods: {
     handleBack() {
-      this.$router.go(-1)
+      this.$router.go(-1);
+    },
+    handlePlay() {
+      this.$store.state.audioStatus.isPlay = !this.$store.state.audioStatus.isPlay;
+      let myAudio = document.getElementById("audio");
     }
   }
 };
@@ -154,7 +163,7 @@ export default {
       background: #fff;
       position: absolute;
       left: 0;
-      top:4px;
+      top: 4px;
     }
   }
   .songAllTime {
@@ -162,5 +171,22 @@ export default {
   }
 }
 .footer {
+  position: fixed;
+  bottom: 20px;
+  height: 50px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  .prev {
+    // left: 30%;
+  }
+  .playing {
+    // left: 50%;
+    margin: 0 25px;
+  }
+  i {
+    font-size: 28px;
+    color: #fff;
+  }
 }
 </style>
